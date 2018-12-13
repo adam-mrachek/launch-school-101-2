@@ -57,12 +57,11 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == EMPTY_MARKER }
 end
 
-def detect_threat(brd)
-  threat_arr = WINNING_LINES.select do |line| 
-    brd.values_at(line[0], line[1], line[2]).count(PLAYER_MARKER) == 2 && brd.values_at(line[0], line[1], line[2]).count(EMPTY_MARKER) == 1
+def find_winning_square(brd, marker)
+  WINNING_LINES.select do |line|
+    brd.values_at(line[0], line[1], line[2]).count(marker) == 2 &&
+      brd.values_at(line[0], line[1], line[2]).count(EMPTY_MARKER) == 1
   end
-  # threat_arr.shuffle
-  # threat_arr[0]
 end
 
 def player_places_piece!(brd)
@@ -79,8 +78,15 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  if detect_threat(brd).length > 0
-    square = detect_threat(brd)[0].select { |num| brd[num] == EMPTY_MARKER }
+  if !find_winning_square(brd, COMPUTER_MARKER).empty?
+    square = find_winning_square(brd, COMPUTER_MARKER)[0].select do |num|
+      brd[num] == EMPTY_MARKER
+    end
+    brd[square[0]] = COMPUTER_MARKER
+  elsif !find_winning_square(brd, PLAYER_MARKER).empty?
+    square = find_winning_square(brd, PLAYER_MARKER)[0].select do |num|
+      brd[num] == EMPTY_MARKER
+    end
     brd[square[0]] = COMPUTER_MARKER
   else
     square = empty_squares(brd).sample
@@ -117,6 +123,7 @@ def game_winner(score)
   elsif score[:computer] == 5
     return 'Computer'
   end
+
   nil
 end
 
@@ -132,7 +139,6 @@ loop do
 
       player_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
-      # binding.pry
 
       computer_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
@@ -158,14 +164,12 @@ loop do
 
     prompt "Press any key to play next round."
     gets
-
   end
 
   prompt "#{game_winner(score)} won the game!"
   prompt "Play again? (y or n)"
   answer = gets.chomp
   break unless answer.downcase.start_with?('y')
-
 end
 
 prompt "Thanks for playing Tic Tac Toe! Goodbye!"
