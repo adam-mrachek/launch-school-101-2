@@ -1,5 +1,6 @@
 require 'pry'
 
+STARTING_PLAYER = 'choose'
 EMPTY_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
@@ -88,6 +89,8 @@ def computer_places_piece!(brd)
       brd[num] == EMPTY_MARKER
     end
     brd[square[0]] = COMPUTER_MARKER
+  elsif brd[5] == EMPTY_MARKER
+    brd[5] = COMPUTER_MARKER
   else
     square = empty_squares(brd).sample
     brd[square] = COMPUTER_MARKER
