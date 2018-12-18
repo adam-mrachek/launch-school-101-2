@@ -137,6 +137,10 @@ loop do
   loop do
     board = initialize_board
 
+    if STARTING_PLAYER == 'player'
+
+      
+
     loop do
       display_board(board)
 
