@@ -97,6 +97,22 @@ def computer_places_piece!(brd)
   end
 end
 
+def place_piece!(brd, current_player)
+  if current_player == PLAYER_MARKER
+    player_places_piece!(brd)
+  elsif current_player == COMPUTER_MARKER
+    computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(current_player)
+  if current_player == PLAYER_MARKER
+    COMPUTER_MARKER
+  elsif current_player == COMPUTER_MARKER
+    PLAYER_MARKER
+  end
+end
+
 def board_full?(brd)
   empty_squares(brd).empty?
 end
@@ -137,17 +153,33 @@ loop do
   loop do
     board = initialize_board
 
+    current_player = ''
     if STARTING_PLAYER == 'player'
+      current_player = PLAYER_MARKER
+    elsif STARTING_PLAYER == 'computer'
+      current_player == COMPUTER_MARKER
+    elsif STARTING_PLAYER == 'choose'
+      choice = ''
+      loop do
+        prompt "Who should go first? ('c' for computer, 'p' for player)"
+        choice = gets.chomp
+        break if ['c', 'p'].include?(choice)
 
-      
+        prompt "That's not a valid option"
+      end
+
+      if choice == 'c'
+        current_player = COMPUTER_MARKER
+      elsif choice == 'p'
+        current_player = PLAYER_MARKER
+      end
+    end
 
     loop do
       display_board(board)
 
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      computer_places_piece!(board)
+      place_piece!(board, current_player)
+      current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
 
