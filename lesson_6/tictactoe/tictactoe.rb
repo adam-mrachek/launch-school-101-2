@@ -4,6 +4,7 @@ STARTING_PLAYER = 'choose'
 EMPTY_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
+WINNING_SCORE = 5
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
                 [[1, 5, 9], [3, 5, 7]]
@@ -29,9 +30,13 @@ def joinor(arr, delimiter=", ", join_word="or")
 end
 
 # rubocop:disable Metrics/AbcSize
-def display_board(brd)
-  system 'clear'
-  puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
+def display_board(brd, score)
+  system('clear') || system('cls')
+  puts "You're #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
+  puts ""
+  puts "Current Score"
+  puts "Player: #{score[:player]}"
+  puts "Computer: #{score[:computer]}"
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -106,11 +111,7 @@ def place_piece!(brd, current_player)
 end
 
 def alternate_player(current_player)
-  if current_player == PLAYER_MARKER
-    COMPUTER_MARKER
-  elsif current_player == COMPUTER_MARKER
-    PLAYER_MARKER
-  end
+  current_player == PLAYER_MARKER ? COMPUTER_MARKER : PLAYER_MARKER
 end
 
 def board_full?(brd)
@@ -137,14 +138,27 @@ def display_score(score)
 end
 
 def game_winner(score)
-  if score[:player] == 5
+  if score[:player] == WINNING_SCORE
     return 'Player'
-  elsif score[:computer] == 5
+  elsif score[:computer] == WINNING_SCORE
     return 'Computer'
   end
 
   nil
 end
+
+puts <<-INTRO
+--------------------
+Welcome to TicTacToe!
+
+First to win #{WINNING_SCORE} rounds wins the game!
+
+Good luck!
+--------------------
+
+INTRO
+
+sleep 1.5
 
 loop do
   score[:player] = 0
@@ -162,7 +176,7 @@ loop do
       choice = ''
       loop do
         prompt "Who should go first? ('c' for computer, 'p' for player)"
-        choice = gets.chomp
+        choice = gets.chomp.downcase
         break if ['c', 'p'].include?(choice)
 
         prompt "That's not a valid option"
@@ -176,14 +190,14 @@ loop do
     end
 
     loop do
-      display_board(board)
+      display_board(board, score)
 
       place_piece!(board, current_player)
       current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
 
-    display_board(board)
+    display_board(board, score)
 
     if someone_won?(board)
       prompt "#{detect_winner(board)} won the round!"
