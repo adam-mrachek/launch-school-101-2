@@ -45,8 +45,8 @@ def deal_card(hand, deck)
   hand << deck.pop
 end
 
-def busted?(hand)
-  total(hand) > 21
+def busted?(cards)
+  total(cards) > 21
 end
 
 def hand(cards)
@@ -61,6 +61,19 @@ def hand(cards)
   hand
 end
 
+def display_hand(cards)
+  prompt "You had #{hand(cards)} for a total of #{total(cards)}."
+end
+
+def play_again?
+  puts ""
+  prompt "Would you like to play again? (y or n)"
+  answer = gets.chomp.downcase
+  answer.start_with?('y')
+end
+
+system('clear') || system('cls')
+
 prompt "----------------------"
 prompt "Welcome to Twenty One!"
 prompt "----------------------"
@@ -68,65 +81,99 @@ prompt "----------------------"
 sleep 1.5
 
 loop do
-  system('clear') || system('cls')
-  game_deck = DECK.shuffle
-  player_cards = []
-  dealer_cards = []
-
-  puts "Dealing cards..."
-  sleep 1.5
-  system('clear') || system('cls')
-
-  2.times do
-    deal_card(player_cards, game_deck)
-    deal_card(dealer_cards, game_deck)
-  end
-
-  prompt "Dealer is showing a #{dealer_cards[0][1]}."
-  sleep 1.5
-
   loop do
+    system('clear') || system('cls')
+    game_deck = DECK.shuffle
+    player_cards = []
+    dealer_cards = []
+
+    puts "Dealing cards..."
+    sleep 1.5
+    system('clear') || system('cls')
+
+    2.times do
+      deal_card(player_cards, game_deck)
+      deal_card(dealer_cards, game_deck)
+    end
+
+    prompt "Dealer is showing a #{dealer_cards[0][1]}."
     prompt "You have #{hand(player_cards)} for a total of #{total(player_cards)}"
-    sleep 1.0
-    prompt "Hit or stay?"
-    answer = gets.chomp.downcase
-    break if answer.start_with?('s')
+    sleep 1.5
 
-    deal_card(player_cards, game_deck)
-    break if busted?(player_cards)
-  end
+    # player turn
+    loop do
+      player_choice = nil
+      loop do
+        prompt "Hit or stay? (h or s)"
+        player_choice = gets.chomp.downcase
+        break if ['h', 's'].include?(player_choice)
 
-  prompt "You busted! You have #{hand(player_cards)} for a total of #{total(player_cards)}" if busted?(player_cards)
+        prompt "Invalid choice. Please choose to (h)it or (s)tay."
+      end
 
-  if !busted?(player_cards)
+      if player_choice == 'h'
+        deal_card(player_cards, game_deck)
+        prompt "You chose to hit!"
+        sleep 1.0
+        prompt "You have #{hand(player_cards)} for a total of #{total(player_cards)}"
+      end
+
+      break if busted?(player_cards) || player_choice == 's'
+    end
+
+    if busted?(player_cards)
+      prompt "You busted! Dealer wins."
+
+      break
+    else
+      prompt "You chose to stay."
+    end
+
+    # dealer turn
     puts ""
     puts "Dealer's turn..."
+    prompt "Dealer has #{hand(dealer_cards)} for a total of #{total(dealer_cards)}"
     puts ""
     sleep 1.0
 
     loop do
-      break if busted?(dealer_cards) || total(dealer_cards) >= DEALER_STAY
+      break if total(dealer_cards) >= DEALER_STAY
 
+      prompt "Dealer hits!"
       deal_card(dealer_cards, game_deck)
+      sleep 1.5
+      prompt "Dealer now has #{hand(dealer_cards)} for a total of #{total(dealer_cards)}"
     end
-  end
 
-  prompt "Dealer has #{hand(dealer_cards)} for a total of #{total(dealer_cards)}"
+    if busted?(dealer_cards)
+      prompt "Dealer busted. You win!"
+      break
+    else
+      prompt "Dealer stays."
+    end
+
+    sleep 1.5
+
+    puts ""
+    prompt "*****************"
+    prompt "You have #{hand(player_cards)} for a total of #{total(player_cards)}."
+    prompt "Dealer has #{hand(dealer_cards)} for a total of #{total(dealer_cards)}"
+    prompt "*****************"
+    puts ""
+
+    if total(dealer_cards) < total(player_cards)
+      prompt "You win!"
+    elsif total(dealer_cards) > total(player_cards)
+      prompt "Dealer wins!"
+    else
+      prompt "It's a draw!"
+    end
+
+    break
+  end
 
   sleep 1.5
-
-  if busted?(dealer_cards) || total(dealer_cards) < total(player_cards) && !busted?(player_cards)
-    prompt "You win!"
-  elsif total(dealer_cards) > total(player_cards) || busted?(player_cards)
-    prompt "Dealer wins!"
-  else
-    prompt "It's a draw!"
-  end
-
-  puts ""
-  prompt "Would you like to play again?"
-  answer = gets.chomp.downcase
-  break if answer.start_with?('n')
+  break unless play_again?
 end
 
 puts "Thanks for playing!"
